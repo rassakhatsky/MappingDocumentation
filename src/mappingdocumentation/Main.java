@@ -4,6 +4,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 
 /**
+ * Documentation for SAP NW XI/PI Mapping
  * * * @author dmitryrassakhatsky
  */
 public
