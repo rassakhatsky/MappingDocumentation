@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package mappingdocumentation;
 
 import java.io.IOException;
@@ -11,34 +7,26 @@ import java.io.IOException;
  *
  * @author erinalen
  */
-public
-        class Trash {
-
-    /**
-     * @param args the command line arguments
-     */
-    public static
-            void main(String[] args) {
-        String src = "/ns0:Messages/ns0:Message1/ns2:BAPI_ADDRESSORG_CHANGE/OBJ_ID";
-        System.out.println(src);
-        // System.out.println(deletePrefix(src));
-    }
+public class Trash {
 
     /**
      * Удаляет технические ставки в сообщении
      *
      * @param source - сообщение в String, в котором необходимо удалить все
-     *               технические вставки по типу "ns0:"
+     * технические вставки по типу "ns0:"
      *
      * @return
      */
-    public
-            String deletePrefix(String source) {
-        String rez = ""; // результирующая переменная
-        String temp = ""; // переменная для накопления букв и цифр итп
-        int i = 0;
-        while (i < source.length()) {
-            char ch = source.charAt(i);
+    public String deletePrefix(String source) {
+        String rez, temp;
+        int index;
+
+        rez = ""; // результирующая переменная
+        temp = ""; // переменная для накопления букв и цифр итп
+        index = 0;
+
+        while (index < source.length()) {
+            char ch = source.charAt(index);
             // если символ или цифра
             if (ch != ':' && ch != '/') {
                 // накпливаем в темповую переменную
@@ -51,7 +39,7 @@ public
                 rez += temp + "/"; // добавляем к резултату
                 temp = ""; // отчищаем темповую переменную
             }
-            i++;
+            index++;
         }
         rez += temp;
 
@@ -65,12 +53,14 @@ public
      *
      * @return
      */
-    private static
-            String deletePrefix2(String source) {
-        String rez = ""; // результирующая переменная
-        int from = 0; // с какой позиции в source ищим
-        int pos_slash = 0; // позция слеша
-        int pos_dvoetochie = 0; // позиция двоеточия
+    private static String deletePrefix2(String source) {
+        String rez;
+        int from, pos_slash, pos_dvoetochie;
+
+        rez = ""; // результирующая переменная
+        from = 0; // с какой позиции в source ищим
+        pos_slash = 0; // позция слеша
+        pos_dvoetochie = 0; // позиция двоеточия
 
         while (pos_slash != -1) {
             pos_slash = source.indexOf("/", from);
@@ -94,8 +84,7 @@ public
         return rez;
     }
 
-    public
-            String deleteTechInformation(String target, String number) throws IOException {
+    public String deleteTechInformation(String target, String number) throws IOException {
         /*
          * Удаляет до 3го "/" вкючительно или если сообщение простое, то
          * удаляется только 1й "/"
@@ -108,13 +97,15 @@ public
          * /ns0:Messages/ns0:Message1/ns1:BAPI_ADDRESSORG_SAVEREPLICA/CONTEXT
          *
          */
+        int i1_target, i2_target, i_target;
+        String tmpTarget;
+
         if (!number.equals("0")) { //Сложный маппинг
-            int i1_target = target.indexOf("/", 0) + 1;
-            int i2_target = target.indexOf("/", i1_target) + 1;
-            int i_target = target.indexOf("/", i2_target) + 1;
+            i1_target = target.indexOf("/", 0) + 1;
+            i2_target = target.indexOf("/", i1_target) + 1;
+            i_target = target.indexOf("/", i2_target) + 1;
             target = target.substring(i_target);
         } else {
-            String tmpTarget;
             if (target.length() != 0) {
                 tmpTarget = target.substring(0, 1);
                 if (tmpTarget.equals("/") && !tmpTarget.equals("")) {

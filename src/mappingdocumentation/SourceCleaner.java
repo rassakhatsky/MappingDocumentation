@@ -1,35 +1,14 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package mappingdocumentation;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  *
  * @author dmitryrassakhatsky
  */
-public
-        class SourceCleaner {
-
-    static
-            String sourceMessage = "";
-    static
-            String source1 = "ifWithoutElse(stringEquals(mapWithDefault(/ns0:Messages/ns0:Message1/BUSINESS_PARTNER/RECORD/BPAddresses/Country/Kod, default_value=RU, result), const(value=RU)), /ns0:Messages/ns0:Message1/BUSINESS_PARTNER/RECORD/BPAddresses/Region/Code, keepss=false)";
-    static
-            String source3 = "/ns0:Messages/ns0:Message1/BUSINESS_PARTNER/RECORD/BPAddresses/Country/Kod, default_value=RU, result), const(value=RU)";
-    boolean bool = true;
-    static
-            String ss = "";
-
-    public static
-            void main(String[] args) throws IOException {
-        // String hhh = checkFunction(source1);
-        System.out.println(source1);
-        // System.out.println(hhh);
-        System.out.println(ss);
-    }
+public class SourceCleaner {
 
     /**
      * На вход подается исходная часть сообщения, функция определяет является ли
@@ -48,19 +27,19 @@ public
      *
      * @throws IOException
      */
-    public
-            String checkFunction(String source) throws IOException {
-        String startBKT = "(";
-        String endBKT = ")";
-        String point = ",";
-        int nextStartBKT = source.indexOf(startBKT); //1й символ "("
-        int nextEndBKT = source.lastIndexOf(endBKT); //Последний символ ")"
-        int nextPoint = source.indexOf(point); //Следующий символ ","
-        boolean attrInd = true;
-        String preSource;
-        String afterSource;
-        String iSource;
-        int balanseBKT = 0; //Баланс (), если равен 0, то это отдельный блок
+    public String checkFunction(String source) throws IOException {
+        String startBKT, endBKT, point, preSource, afterSource, iSource;
+        int nextStartBKT, nextEndBKT, nextPoint, balanseBKT;
+        boolean attrInd;
+
+        startBKT = "(";
+        endBKT = ")";
+        point = ",";
+        nextStartBKT = source.indexOf(startBKT); //1й символ "("
+        nextEndBKT = source.lastIndexOf(endBKT); //Последний символ ")"
+        nextPoint = source.indexOf(point); //Следующий символ ","
+        attrInd = true;
+        balanseBKT = 0; //Баланс (), если равен 0, то это отдельный блок
 
         /*
          * Проверяем наличие блоков ()
@@ -106,7 +85,6 @@ public
                     nextStartBKT = 0;
                 }
                 i++;
-
             }
         } else {
             source = executeFunction(source);
@@ -114,22 +92,26 @@ public
         return source;
     }
 
-    public
-            String executeFunction(String source) throws IOException {
+    private String executeFunction(String source) throws IOException {
+        String target;
+
         /*
          * Определяем необходимо ли деление
          */
-        String target = "";
+        target = "";
         if (source.indexOf(",") != -1) {
-            String[] Source;
-            Source = source.split(",");
+            ArrayList<String> sourceList;
+            int size;
 
-            for (int i = 0; i < Source.length; i++) {
-                Source[i] = executeFunctionForOne(Source[i]);
+            sourceList = new ArrayList(Arrays.asList(source.split(",")));
+            size = sourceList.size();
+            for (int i = 0; i < size; i++) {
+                sourceList.add(i, executeFunctionForOne(sourceList.get(i)));
                 if (target.equals("")) {
-                    target = target + Source[i];
+                    target += sourceList.get(i);
                 } else {
-                    target = target + "," + Source[i];
+                    target += "," + sourceList.get(i);
+                    System.out.println(i);
                 }
             }
         } else {
@@ -138,24 +120,23 @@ public
         return target;
     }
 
-    public
-            String executeFunctionForOne(String source) throws IOException {
+    private String executeFunctionForOne(String source) throws IOException {
 
-        String target = "";
+        String target;
         /*
          * Определим необходимо ли производить очистку
          */
         if (source.indexOf("/") != -1 && source.indexOf(":") != -1) { //Очистка необходима
+            String number;
+            MessageNum iMessageNum;
 
             //Определим номер сообщения
-            String number;
-            MessageNum iMessageNum = new MessageNum();
+            iMessageNum = new MessageNum();
             number = iMessageNum.getMessageNumber(source);
 
             Trash iTrash = new Trash();
             source = iTrash.deleteTechInformation(source, number);
-            source = iTrash.deletePrefix(source);
-            target = source;
+            target = iTrash.deletePrefix(source);
         } else { //Очистка не требуется
             target = source;
         }
@@ -171,11 +152,5 @@ public
      * сообщение, поэтому от него до 1й "," или ")" можно не обрабатывать - это
      * точно будет константа
      * Для надежности
-     *
-     * @param source
-     *
-     * @return
-     *
-     * @throws IOException
      */
 }

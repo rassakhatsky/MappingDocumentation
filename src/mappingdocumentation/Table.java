@@ -1,10 +1,8 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package mappingdocumentation;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * Генерация массива из считанного из файла массива данных, преобразованного в
@@ -12,57 +10,47 @@ import java.io.IOException;
  *
  * @author dmitryrassakhatsky
  */
-public
-        class Table {
+public class Table {
 
-    OutputStreaming outputStreaming = new OutputStreaming();
-    String messageNum = null; //Порядковый номер сообщения
-    String prevMessageNum = "0"; //Порядковый номер предыдущей строки
-    String sourceMessage = null; //Определяем исходное сообщение
-    String targetMessage = null; //Определяем целевое сообщение
+    private OutputStreaming outputStreaming;
+    private String messageNum; //Порядковый номер сообщения
+    private String prevMessageNum; //Порядковый номер предыдущей строки
+    private String sourceMessage; //Определяем исходное сообщение
+    private String targetMessage; //Определяем целевое сообщение
+    private ArrayList<String> path;
 
-    public static
-            void main(String[] args) throws IOException {
-
-        String catalog = "/Users/dmitryrassakhatsky/Desktop/out.csv";
-        String stringSource = "";
-        Table table = new Table();
-        table.createTable(stringSource, catalog);
-        System.out.println("Пыщь Пыщь");
-    }
     /**
      * Создание таблицы с результатами обработки
      *
      * @param stringSource - строка содержащая искходный файл
-     * @param catalog      - полный путь к файлу, в который необходимо записать
+     * @param catalog - полный путь к файлу, в который необходимо записать
      * результат преобразования
      *
      * @throws IOException
      */
-    String[] path = new String[255];
-
-    public
-            void createTable(String stringSource, String catalog) throws IOException {
-        String[] unformattedTable; //Определяем массив для построчного представления полученного файла
+    public void createTable(String stringSource, String catalog) throws IOException {
+        ArrayList<String> unformattedTable; //Определяем массив для построчного представления полученного файла
         int Lenght;//Определяем переменную размера массива
-        String[][] table; //Определяем массив для таблицы с целевым и исходным сообщением
         String messageHeader; //Заголовок сообщения в таблице
+
+        outputStreaming = new OutputStreaming();
+        messageNum = null;
+        prevMessageNum = "0";
+        sourceMessage = null;
+        targetMessage = null;
+        path = new ArrayList<String>();
 
         /**
          * Создается массив, в котором исходные данные разделены построчно
          */
         stringSource = stringSource.replaceAll("\\r", "");
-
-
-        unformattedTable = stringSource.toString().split("\n");
+        unformattedTable= new ArrayList(Arrays.asList(stringSource.split("\n")));
 
         /**
          * Создается массив, в котором данные из предыдущего массива делятся на
          * исходное и целевое сообщение
          */
-        Lenght = unformattedTable.length;
-        table = new String[Lenght][2];
-
+        Lenght = unformattedTable.size();
         /**
          * Создаем шапку таблицы
          */
@@ -72,22 +60,25 @@ public
          * Построчно заполняем таблицу
          */
         for (int i = 0; i < Lenght; i++) {
-            String temp = unformattedTable[i]; //Временная переменная для хранения значений
-            int tempBorder = temp.indexOf("="); //Определяем место разделителя исходного и целевого сообщения
-            int tempBorderNS; //Место константы "/ns" в исходном сообщении
+            String temp, number;
+            int tempBorder, tempBorderNS;//Место константы "/ns" в исходном сообщении
+            MessageNum iMessageNum;
+            Trash trash;
+
+            temp = unformattedTable.get(i); //Временная переменная для хранения значений
+            tempBorder = temp.indexOf("="); //Определяем место разделителя исходного и целевого сообщения
             sourceMessage = temp.substring(tempBorder + 1); //Определяем исходное сообщение
             targetMessage = temp.substring(0, tempBorder); //Определяем целевое сообщение
 
             /**
              * Определяем номер сообщения
              */
-            String number;
-            MessageNum iMessageNum = new MessageNum();
+            iMessageNum = new MessageNum();
             messageNum = iMessageNum.getMessageNumber(targetMessage);
             /**
              * Удаляем техническую информацию
              */
-            Trash trash = new Trash();
+            trash = new Trash();
             targetMessage = trash.deleteTechInformation(targetMessage, messageNum);
             targetMessage = trash.deletePrefix(targetMessage);
             //sourceMessage = trash.deletePrefix(sourceMessage);
@@ -123,15 +114,16 @@ public
         outputStreaming.close();
     }
 
-    public
-            String createTarget(String targetMessage) throws IOException {
+    private String createTarget(String targetMessage) throws IOException {
+        ArrayList<String> Levels;
+        String target, empty;
+
         /**
          * Обработка целевого сообщения
          */
-        String[] Levels;
-        String target = "";
-        String empty = "   ";
-        Levels = targetMessage.split("/");
+        target = "";
+        empty = "   ";
+        Levels = new ArrayList(Arrays.asList(targetMessage.split("/")));
 
         /*
          * Проверяем был ли такой уровень до этого, если был, то проверяем был
@@ -140,57 +132,56 @@ public
          * Но - последний уровень нужно отображать всегда, поэтому для него
          * делаем исключение
          */
-        for (int j = 0; j < Levels.length; j++) {
-            if (j != (Levels.length - 1)) { //Это любой уровень кроме последнего
-                if (path[j] != null) { //Уровень уже существует
+        for (int index = 0; index < Levels.size(); index++) {
+            if (index != (Levels.size() - 1)) { //Это любой уровень кроме последнего
+                if (path.get(index) != null) { //Уровень уже существует
 
-                    if (j != 0) { //Исключение является имя самого сообщения
-                        if (!path[j].equals(Levels[j])) {   //Уровень изменился
-                            target = target + Levels[j].toString() + "/";
-                            path[j] = Levels[j];
+                    if (index != 0) { //Исключение является имя самого сообщения
+                        if (!path.get(index).equals(Levels.get(index))) {   //Уровень изменился
+                            target += Levels.get(index).toString() + "/";
+                            path.add(index, Levels.get(index));
 
                             /*
                              * При изменении уровня, все послежующие должны
                              * обнуляться
                              */
-                            for (int k = j + 1; k < Levels.length; k++) {
-                                path[k] = null;
+                            for (int k = index + 1; k < Levels.size(); k++) {
+                                path.add(k, null);
                             }
 
                         } else {  //Уровень не изменился
-                            target = target + empty;
+                            target += empty;
                         }
                     } else {
-                        path[j] = Levels[j];
-                        target = target + empty;
+                        path.add(index, Levels.get(index));
+                        target += empty;
                     }
 
                 } else { //Уровень не существовал ранее
-                    if (j != 0) { //Исключение является имя самого сообщения
-                        target = target + Levels[j].toString() + "/";
+                    if (index != 0) { //Исключение является имя самого сообщения
+                        target += Levels.get(index).toString() + "/";
                     } else {
-                        target = target + empty;
+                        target += empty;
 
                         /*
                          * При изменении уровня, все послежующие должны
                          * обнуляться
                          */
-                        for (int k = j + 1; k < Levels.length; k++) {
-                            path[k] = null;
+                        for (int k = index + 1; k < Levels.size(); k++) {
+                            path.add(k, null);
                         }
                     }
-                    path[j] = Levels[j];
-
+                    path.add(index, Levels.get(index));
                 }
             } else { //Это последний уровень, его всегда записываем в файл
-                path[j] = Levels[j];
-                target = target + Levels[j].toString() + "/";
+                path.add(index, Levels.get(index));
+                target += Levels.get(index).toString() + "/";
                 /*
                  * При изменении уровня, все послежующие должны
                  * обнуляться
                  */
-                for (int k = j + 1; k < Levels.length; k++) {
-                    path[k] = null;
+                for (int k = index + 1; k < Levels.size(); k++) {
+                    path.add(k, null);
                 }
             }
         }
@@ -198,8 +189,7 @@ public
         return target;
     }
 
-    public
-            String createSource(String source) throws IOException {
+    private String createSource(String source) throws IOException {
         /*
          * String sourceReturn=""; //Результат обработки
          * source = source.replace("const(value=", "const(");//Улучшаем
@@ -222,8 +212,9 @@ public
          * }
          *
          */
-        // SourceCleaner sourceCleaner = new SourceCleaner();
-        Constant constant = new Constant();
+        Constant constant;
+
+        constant = new Constant();
         source = constant.checkConstant(source);
         return source;
     }
@@ -232,7 +223,7 @@ public
      * Выделяет смену сообщения
      *
      * @param number
-* param
+     * param
      * targetMessage
      * param
      * record
@@ -241,13 +232,14 @@ public
      *
      * @throws IOException
      */
-    public
-            String createNewMessageHeader(String number, String target, int record) throws IOException {
+    private String createNewMessageHeader(String number, String target, int record) throws IOException {
         /**
          * Проверка, сложный ли маппинг (содержит в себе больше 1 сообщения,
          * т.е. имеет конструкцию /ns0:Messages/ns0:Message1/
          */
-        int border = target.indexOf("/");
+        int border;
+
+        border = target.indexOf("/");
         if (border != -1) {
             target = target.substring(0, border);
         }
@@ -264,8 +256,7 @@ public
      *
      * @throws IOException
      */
-    public
-            String deleteTechInformation(String target, String number) throws IOException {
+    private String deleteTechInformation(String target, String number) throws IOException {
         /*
          * Возможные варианты targetMessage
          *
